@@ -16,7 +16,7 @@ class Student(models.Model):
         ('SR', 'Senior'),
     )
     year_in_school = models.CharField(max_length=2, choices=YEAR_IN_SCHOOL_CHOICES)
-    age = models.SmallIntegerField(validators=[MinLengthValidator(1),, MaxLengthValidator(100)])
+    age = models.SmallIntegerField(validators=[MinLengthValidator(1), MaxLengthValidator(100)])
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     # relationships models
