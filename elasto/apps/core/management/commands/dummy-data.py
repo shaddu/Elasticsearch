@@ -8,7 +8,7 @@ from core.models import University, Course, Student
 
 
 class Command(BaseCommand):
-    help = "My shiny new management command."
+    help = "Dummy Data Helper."
 
     def add_arguments(self, parser):
         parser.add_argument('count', nargs=1, type=int)
