@@ -1,17 +1,58 @@
-from __future__ import unicode_literals
-from django.db import models
-from django.core.validators import MinLengthValidator,  MaxLengthValidator
 import django.db.models.options as options
+
+from django.db import models
+from django.conf import settings
+from django.core.validators import MinValueValidator, MaxValueValidator
+
+
 options.DEFAULT_NAMES = options.DEFAULT_NAMES + (
     'es_index_name', 'es_type_name', 'es_mapping'
 )
+es_client = settings.ES_CLIENT
+
+
 class University(models.Model):
     name = models.CharField(max_length=255, unique=True)
+
+    def save(self, *args, **kwargs):
+        super(University, self).save(*args, **kwargs)
+        for student in self.student_set.all():
+            data = student.field_es_repr('university')
+            es_client.update(
+                index=student._meta.es_index_name,
+                doc_type=student._meta.es_type_name,
+                id=student.pk,
+                body={
+                    'doc': {
+                        'university': data
+                    }
+                }
+            )
+
 
 class Course(models.Model):
     name = models.CharField(max_length=255, unique=True)
 
+
 class Student(models.Model):
+    YEAR_IN_SCHOOL_CHOICES = (
+        ('FR', 'Freshman'),
+        ('SO', 'Sophomore'),
+        ('JR', 'Junior'),
+        ('SR', 'Senior'),
+    )
+    # note: incorrect choice in MyModel.create leads to creation of incorrect record
+    year_in_school = models.CharField(
+        max_length=2, choices=YEAR_IN_SCHOOL_CHOICES)
+    age = models.SmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(100)]
+    )
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
+    # various relationships models
+    university = models.ForeignKey(University, null=True, blank=True)
+    courses = models.ManyToManyField(Course, null=True, blank=True)
+
     class Meta:
         es_index_name = 'django'
         es_type_name = 'student'
@@ -28,8 +69,9 @@ class Student(models.Model):
                 'age': {'type': 'short'},
                 'year_in_school': {'type': 'string'},
                 'name_complete': {
-                    'type': 'completion',
+                    'type': 'completion',  # you have to make a method for completition for sure!
                     'analyzer': 'simple',
+                  #  'payloads': True,  # note that we have to provide payload while updating
                     'preserve_separators': True,
                     'preserve_position_increments': True,
                     'max_input_length': 50,
@@ -40,7 +82,7 @@ class Student(models.Model):
             }
         }
 
-        def es_repr(self):
+    def es_repr(self):
         data = {}
         mapping = self._meta.es_mapping
         data['_id'] = self.pk
@@ -111,21 +153,3 @@ class Student(models.Model):
             id=prev_pk,
             refresh=True,
         )
-
-
-    YEAR_IN_SCHOOL_CHOICES = (
-        ('FR', 'Freshman'),
-        ('SO', 'Sophomore'),
-        ('JR', 'Junior'),
-        ('SR', 'Senior'),
-    )
-    year_in_school = models.CharField(max_length=2, choices=YEAR_IN_SCHOOL_CHOICES)
-    age = models.SmallIntegerField(validators=[MinLengthValidator(1), MaxLengthValidator(100)])
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
-    # relationships models
-    university = models.ForeignKey(University, null=True, blank=True)
-    courses = models.ManyToManyField(Course, null=True, blank=True)
-
-
-
