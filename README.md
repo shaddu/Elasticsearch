@@ -1,7 +1,11 @@
 # Elasticsearch with Django
 
+Implementing Elasticsearch in python project
 
 
 
-#To DO
-Kibana
+
+**To Do**
+* Add Kibana visualization
+
+
