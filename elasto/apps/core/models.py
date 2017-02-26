@@ -71,7 +71,7 @@ class Student(models.Model):
                 'name_complete': {
                     'type': 'completion',  # you have to make a method for completition for sure!
                     'analyzer': 'simple',
-                  #  'payloads': True,  # note that we have to provide payload while updating
+                    'payloads': True,  # note that we have to provide payload while updating
                     'preserve_separators': True,
                     'preserve_position_increments': True,
                     'max_input_length': 50,
