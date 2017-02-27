@@ -68,13 +68,13 @@ class Student(models.Model):
                 'last_name': {'type': 'string', 'index': 'not_analyzed'},
                 'age': {'type': 'short'},
                 'year_in_school': {'type': 'string'},
-                'name_complete': {
-                    'type': 'completion',  # you have to make a method for completition for sure!
-                    'analyzer': 'simple',
-                    'payloads': True,  # note that we have to provide payload while updating
-                    'preserve_separators': True,
-                    'preserve_position_increments': True,
-                    'max_input_length': 50,
+                "name_complete": {
+                    "type": "completion",  # you have to make a method for completition for sure!
+                    "analyzer": "simple",
+                    "payloads": True,  # note that we have to provide payload while updating
+                    "preserve_separators": True,
+                    "preserve_position_increments": True,
+                    "max_input_length": 50,
                 },
                 "course_names": {
                     "type": "string", "store": "yes", "index": "not_analyzed",
